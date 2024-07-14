@@ -3,6 +3,7 @@ import sqlite3
 import os
 from dotenv import load_dotenv
 
+# Init database
 con = sqlite3.connect("codecentric_repo.db")
 cur = con.cursor()
 
@@ -33,11 +34,13 @@ cur.execute(
     """
 )
 
+# Load GitHub token from .env file
 load_dotenv()
 token = os.getenv("GITHUB_TOKEN")
 
 headers = {"Authorization": f"token {token}"}
 
+# Crawl all personal repos of codecentric members
 members = requests.get(
     "https://api.github.com/orgs/codecentric/members", headers=headers
 ).json()
@@ -62,5 +65,46 @@ for person in members:
             (person["login"], repo_name),
         )
 
+# Crawl all codecentric repos and check if codecentric members contributed
+codecentric_logins = [person["login"] for person in members]
+
+repos = requests.get(
+    "https://api.github.com/orgs/codecentric/repos", headers=headers
+).json()
+
+for repo in repos:
+    contributors = requests.get(
+        f"https://api.github.com/repos/{repo['full_name']}/contributors",
+        headers=headers,
+    ).json()
+
+    codecentric_contributed = False
+
+    for contributor in contributors:
+        if contributor["login"] in codecentric_logins:
+            name = requests.get(
+                f"https://api.github.com/users/{contributor['login']}", headers=headers
+            ).json()["name"]
+            print(f"Add person to db: {contributor['login']}")
+            cur.execute(
+                "INSERT OR IGNORE INTO person VALUES (?, ?)",
+                (contributor["login"], name),
+            )
+
+            print(f"Add person-repo to db: {contributor['login']}, {repo['full_name']}")
+            cur.execute(
+                "INSERT OR IGNORE INTO person_repo VALUES (?, ?)",
+                (contributor["login"], repo["full_name"]),
+            )
+            codecentric_contributed = True
+
+    if codecentric_contributed:
+        print(f"Add repo to db: {repo['full_name']}, {repo['language']}")
+        cur.execute(
+            "INSERT OR IGNORE INTO repo VALUES (?, ?)",
+            (repo["full_name"], repo["language"]),
+        )
+
+# Close database connection
 con.commit()
 con.close()
