@@ -19,19 +19,23 @@ cursor = cur.execute(
     )
 )
 
-perons = []
+persons = []
 repos = []
 
+if len(cursor.fetchall()) == 0:
+    print("No results found")
+    exit()
+
 for row in cursor.fetchall():
-    if row[0] not in perons:
-        perons.append(row[0])
+    if row[0] not in persons:
+        persons.append(row[0])
         repos.append(row[1])
     else:
-        repos[len(perons) - 1] = repos[len(perons) - 1] + ", " + row[1]
+        repos[len(persons) - 1] = repos[len(persons) - 1] + ", " + row[1]
 
-for i in range(len(perons)):
+for i in range(len(persons)):
     print(
-        f"{perons[i]} contributed in the following repositories, that mainly use {language}: {repos[i]}"
+        f"{persons[i]} contributed in the following repositories, that mainly use {language}: {repos[i]}"
     )
 
 con.close()
