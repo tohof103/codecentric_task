@@ -56,3 +56,5 @@ python fill_db.py
 Das Tool basiert auf Python, das sich gut für solch kurze Skripte eignet. In Hintergrund steht eine sehr leichtgewichtige SQLite Datenbank.
 
 Das Befüllen der Datenbank läuft über zwei Wege. Zum ersten werden die persönlichen Repos alle Codecentric Mitglieder gecrawlt und in der Datenbank gespeichert. Anschließend iteriert das Tool noch durch alle Codecentrric Repositories und ergänzt alle, bei denen codecentric Mitglieder contributed haben.
+
+Das exploration.ipynb ist nur für die Erprobung neuer Features gedacht, nicht für den tatsächlichen Gebrauch.
